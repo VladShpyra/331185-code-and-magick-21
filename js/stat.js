@@ -5,11 +5,11 @@ let CLOUD_HEIGHT = 270;
 let CLOUD_X = 100;
 let CLOUD_Y = 10;
 let GAP = 10;
-let TEXT_HEIGHT = 20;
-let BAR_HEIGHT = 150;
+let BAR_MAX_HEIGHT = 150;
 let BAR_WIDTH = 40;
-let COLUMN_GAP = 50;
-let playerY = 260;
+let BARS_SPACING = 50;
+let BARS_LEFT_SPACING = 40;
+let BARS_TOP_SPACING = 80;
 
 
 let renderCloud = function (ctx, x, y, color) {
@@ -19,49 +19,70 @@ let renderCloud = function (ctx, x, y, color) {
 
 let getMaxElement = function (arr) {
   let maxElement = arr[0];
+
   for (let i = 1; i < arr.length; i++) {
     if (arr[i] > maxElement) {
       maxElement = arr[i];
     }
   }
+
   return maxElement;
 };
 
 window.renderStatistics = function (ctx, names, times) {
+
+  // Нарисуем тень
   renderCloud(
       ctx,
       CLOUD_X + GAP,
       CLOUD_Y + GAP,
-      `rgba(0, 0, 0, 0.3)`
+      `rgba(0, 0, 0, 0.7)`
   );
+  // Нарисуем облако
   renderCloud(
       ctx,
       CLOUD_X,
       CLOUD_Y,
       `#fff`
   );
+  // найдем максимальный счет
+  const maxTime = getMaxElement(times);
 
-  ctx.fillStyle = `#000`;
+  ctx.textBaseline = `hanging`;
   ctx.font = `16px PT Mono`;
-  ctx.fillText(`Ура вы победили!`, CLOUD_X + GAP, CLOUD_Y + (GAP * 3));
-
   ctx.fillStyle = `#000`;
-  ctx.font = `16px PT Mono`;
-  ctx.fillText(`Список результатов:`, CLOUD_X + GAP, CLOUD_Y + (GAP * 5));
 
-  let maxTime = getMaxElement(times);
+  ctx.fillText(`Ура вы победили!`, CLOUD_X + GAP * 2, CLOUD_Y + GAP * 2);
+  ctx.fillText(`Список результатов:`, CLOUD_X + GAP * 2, CLOUD_Y + GAP * 4);
+
   for (let i = 0; i < names.length; i++) {
-    ctx.fillStyle = names[i] === `Вы` ? `rgba(255, 0, 0, 1)` : `hsl(240, 100%,` + Math.floor(Math.random() * 90 + 10) + `%)`;
+    // Рассчитаем высоту текущей колонки гистограммы
+    let barHeight = (BAR_MAX_HEIGHT * times[i]) / maxTime;
+
+    // Цвет для подписей - черный
+    ctx.fillStyle = `#000`;
+    // Выведем счет текущего игрока
+    ctx.fillText(
+        Math.round(times[i]).toString(),
+        CLOUD_X + BARS_LEFT_SPACING + (BAR_WIDTH + BARS_SPACING) * i,
+        CLOUD_Y + BARS_TOP_SPACING + BAR_MAX_HEIGHT - barHeight - GAP * 2
+    );
+    // Выведем цвет игрока
     ctx.fillText(
         names[i],
-        CLOUD_X + COLUMN_GAP + (COLUMN_GAP * 2) * i,
-        playerY,
+        CLOUD_X + BARS_LEFT_SPACING + (BAR_WIDTH + BARS_SPACING) * i,
+        CLOUD_Y + BARS_TOP_SPACING + BAR_MAX_HEIGHT + GAP
     );
+    // Определяем цвет игрока
+    ctx.fillStyle = names[i] === `Вы`
+      ? `rgba(255, 0, 0, 1)`
+      : ctx.fillStyle = `hsl(240, ${Math.round(Math.random() * 100)}%, 50%)`;
+    // Рисуем колонку
     ctx.fillRect(
-        CLOUD_X + COLUMN_GAP + (COLUMN_GAP * 2) * i,
-        CLOUD_Y + COLUMN_GAP + TEXT_HEIGHT,
+        CLOUD_X + BARS_LEFT_SPACING + (BAR_WIDTH + BARS_SPACING) * i,
+        CLOUD_Y + BARS_TOP_SPACING + BAR_MAX_HEIGHT - barHeight,
         BAR_WIDTH,
-        (BAR_HEIGHT * times[i] / maxTime)
+        barHeight
     );
   }
 };
